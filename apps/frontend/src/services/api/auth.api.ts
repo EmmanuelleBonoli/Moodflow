@@ -1,5 +1,5 @@
 import {apiClient} from './index';
-import {RegisterUser, RegisterOrLoginUserResponse, LoginUser} from "@moodflow/types/auth";
+import {RegisterUser, RegisterOrLoginUserResponse, LoginUser} from "@moodflow/types";
 
 export const authApi = {
     login: (loginUser: LoginUser): Promise<RegisterOrLoginUserResponse> =>
@@ -8,4 +8,6 @@ export const authApi = {
     register: (registerUser: RegisterUser): Promise<RegisterOrLoginUserResponse> =>
         apiClient.post('/auth/register', registerUser),
 
+    refreshTokenAndStores: (): Promise<RegisterOrLoginUserResponse> =>
+        apiClient.get('/auth/refreshToken')
 };

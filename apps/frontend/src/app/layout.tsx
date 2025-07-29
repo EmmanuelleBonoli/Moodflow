@@ -3,7 +3,6 @@ import {Inter} from 'next/font/google'
 import "./globals.css";
 import {PropsWithChildren} from "react";
 import {ThemeProvider} from "next-themes";
-import SwitchTheme from "@/components/shared/switch-theme";
 import {Toaster} from "sonner";
 
 const inter = Inter({subsets: ['latin']})
@@ -24,7 +23,6 @@ export default function RootLayout({children}: PropsWithChildren) {
                 enableSystem
                 disableTransitionOnChange
             >
-                <header className="flex justify-end"><SwitchTheme/></header>
                 {children}
                 <Toaster/>
             </ThemeProvider>

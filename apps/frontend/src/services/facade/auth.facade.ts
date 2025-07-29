@@ -1,12 +1,25 @@
 import {authApi} from "@/services/api";
-import {LoginUser, RegisterUser} from "@moodflow/types/auth";
+import {useUserStore} from "@/stores/userStore";
+import {LoginUser, RegisterOrLoginUserResponse, RegisterUser} from "@moodflow/types";
+import {DashboardFacade} from "@/services/facade/dashboard.facade";
 
 export class AuthFacade {
+    private userStore = useUserStore();
+    private dashboardFacade: DashboardFacade = new DashboardFacade();
+
+    private async handleAuthResponse(authResponse: RegisterOrLoginUserResponse): Promise<void> {
+        const {user, dashboard} = authResponse;
+        console.log(dashboard);
+
+        localStorage.setItem('accessToken', user.accessToken);
+        this.userStore.setUserName(user.name);
+        this.dashboardFacade.updateDashboardStore(dashboard);
+    }
 
     async register(registerUser: RegisterUser): Promise<void> {
         try {
-            const {accessToken} = await authApi.register(registerUser);
-            localStorage.setItem('accessToken', accessToken);
+            const response = await authApi.register(registerUser);
+            await this.handleAuthResponse(response);
         } catch (error) {
             throw error;
         }
@@ -14,15 +27,20 @@ export class AuthFacade {
 
     async login(loginUser: LoginUser): Promise<void> {
         try {
-            console.log(loginUser);
-            const {accessToken} = await authApi.login(loginUser);
-            localStorage.setItem('accessToken', accessToken);
+            const response = await authApi.login(loginUser);
+            await this.handleAuthResponse(response);
         } catch (error) {
             throw error;
         }
     }
 
-    // logout(): void {
-    //
-    // }
+    async refreshTokenAndStores(): Promise<void> {
+        try {
+            const response = await authApi.refreshTokenAndStores();
+            await this.handleAuthResponse(response);
+        } catch (error) {
+            throw error;
+        }
+    }
+
 }

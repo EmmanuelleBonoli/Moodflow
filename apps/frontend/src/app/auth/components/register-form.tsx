@@ -1,10 +1,10 @@
 "use client";
 
 import {useForm} from "react-hook-form";
-import InputField from "@/components/shared/input-field";
+import InputField from "@/components/shared/InputField";
 import {zodResolver} from "@hookform/resolvers/zod";
-import * as z from "zod";
-import {RegisterUser} from "@moodflow/types/auth";
+import {z} from "zod";
+import {RegisterUser} from "@moodflow/types";
 import {AuthFacade} from "@/services/facade/auth.facade";
 import {useRouter} from "next/navigation";
 import {toast} from "sonner";
@@ -85,7 +85,7 @@ export default function RegisterForm() {
                 className="btn-primary w-full"
             >
                 <span className="flex items-center justify-center">
-                    S'inscrire avec Google
+                    S&#39;inscrire avec Google
                 </span>
             </button>
 

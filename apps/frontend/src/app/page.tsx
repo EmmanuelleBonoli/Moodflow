@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import {Calendar, TrendingUp, Zap} from 'lucide-react'
-import Logo from "@/components/shared/logo";
+import Logo from "@/components/shared/Logo";
 
 export default function Home() {
     return (
@@ -13,7 +13,7 @@ export default function Home() {
                 </h1>
 
                 <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-                    L'assistant personnel intelligent qui adapte votre planning à votre humeur
+                    L&#39;assistant personnel intelligent qui adapte votre planning à votre humeur
                     pour une productivité optimale et un bien-être au quotidien.
                 </p>
 
@@ -38,7 +38,7 @@ export default function Home() {
                     <Calendar className="w-12 h-12 text-indigo-500 mb-4"/>
                     <h3 className="text-xl font-semibold text-gray-800 mb-3">Planning Intelligent</h3>
                     <p className="text-gray-600">
-                        L'IA analyse votre humeur et propose un planning personnalisé
+                        L&#39;IA analyse votre humeur et propose un planning personnalisé
                         pour maximiser votre productivité.
                     </p>
                 </div>
@@ -56,7 +56,7 @@ export default function Home() {
                     <Zap className="w-12 h-12 text-teal-500 mb-4"/>
                     <h3 className="text-xl font-semibold text-gray-800 mb-3">Adaptation Continue</h3>
                     <p className="text-gray-600">
-                        L'assistant apprend de vos habitudes pour affiner ses
+                        L&#39;assistant apprend de vos habitudes pour affiner ses
                         recommandations jour après jour.
                     </p>
                 </div>

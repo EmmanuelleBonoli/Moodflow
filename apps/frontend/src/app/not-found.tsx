@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import {Home, ArrowLeft} from 'lucide-react'
 import {useRouter} from 'next/navigation'
-import Logo from "@/components/shared/logo";
+import Logo from "@/components/shared/Logo";
 
 export default function NotFound() {
     const router = useRouter()

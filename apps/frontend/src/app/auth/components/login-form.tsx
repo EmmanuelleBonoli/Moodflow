@@ -1,10 +1,9 @@
 "use client";
 
 import {useForm} from "react-hook-form";
-import InputField from "@/components/shared/input-field";
+import InputField from "@/components/shared/InputField";
 import {zodResolver} from "@hookform/resolvers/zod";
-import * as z from "zod";
-import {RegisterUser} from "@moodflow/types/auth";
+import {z} from "zod";
 import {AuthFacade} from "@/services/facade/auth.facade";
 import {useRouter} from "next/navigation";
 import {toast} from "sonner";
@@ -31,16 +30,11 @@ export default function LoginForm() {
     const authFacade = new AuthFacade();
     const router = useRouter();
 
-    const {
-        register,
-        handleSubmit,
-        formState: {errors},
-    } = useForm<FormValues>({
+    const {register, handleSubmit, formState: {errors},} = useForm<FormValues>({
         resolver: zodResolver(schema),
     });
 
     async function onSubmit(data: FormValues): Promise<void> {
-        console.log("Form data:", data);
         try {
             await authFacade.login(data)
             router.push("/dashboard");

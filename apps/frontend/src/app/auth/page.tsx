@@ -1,6 +1,6 @@
 'use client';
 
-import Logo from "@/components/shared/logo";
+import Logo from "@/components/shared/Logo";
 import {useState} from "react";
 import LoginForm from "./components/login-form";
 import RegisterForm from "./components/register-form";

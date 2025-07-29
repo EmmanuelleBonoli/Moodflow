@@ -1,12 +1,13 @@
 "use client";
 
 import {useEffect} from "react";
-import {useRouter, useSearchParams} from "next/navigation";
+import {ReadonlyURLSearchParams, useRouter, useSearchParams} from "next/navigation";
+import {AppRouterInstance} from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 export default function OAuth2Success() {
-    const router = useRouter();
-    const params = useSearchParams();
-    const token = params.get("token");
+    const router: AppRouterInstance = useRouter();
+    const params: ReadonlyURLSearchParams = useSearchParams();
+    const token: string | null = params.get("token");
 
     useEffect(() => {
         if (token) {

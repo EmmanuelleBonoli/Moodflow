@@ -67,7 +67,6 @@
     background: linear-gradient(135deg, #010314 0%, #151728 100%);
 }
 
-
 .app-title-gradient {
     @apply bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent;
 }
@@ -90,8 +89,6 @@
 
 :root {
     --radius: 0.625rem;
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.129 0.042 264.695);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.129 0.042 264.695);
     --popover: oklch(1 0 0);
@@ -121,6 +118,8 @@
     --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
     --sidebar-border: oklch(0.929 0.013 255.508);
     --sidebar-ring: oklch(0.704 0.04 256.788);
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.129 0.042 264.695);
 }
 
 .dark {
@@ -167,3 +166,68 @@
     }
 }
 
+/* Scrollbar automatique pour tous les éléments (Webkit: Chrome, Safari, Edge) */
+html *::-webkit-scrollbar {
+    width: 8px !important;
+    height: 8px !important;
+}
+
+html *::-webkit-scrollbar-track {
+    background: transparent !important;
+    border-radius: 0 !important;
+}
+
+html *::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.5) !important; /* Gris moderne */
+    border-radius: 4px !important;
+    border: none !important;
+    transition: background 0.2s ease !important;
+}
+
+html *::-webkit-scrollbar-thumb:hover {
+    background: rgba(107, 114, 128, 0.8) !important; /* Gris plus foncé au hover */
+}
+
+/* Supprime les boutons complètement */
+html *::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+html *::-webkit-scrollbar-corner {
+    background: transparent !important;
+}
+
+/* Pour le mode sombre */
+.dark *::-webkit-scrollbar-thumb {
+    background: rgba(75, 85, 99, 0.6) !important; /* Gris sombre */
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+    background: rgba(107, 114, 128, 0.8) !important;
+}
+
+/* Firefox */
+html * {
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(156, 163, 175, 0.5) transparent !important;
+}
+
+html.dark * {
+    scrollbar-color: rgba(75, 85, 99, 0.6) transparent !important;
+}
+
+/* Style spécifique pour le body */
+body::-webkit-scrollbar {
+    width: 8px !important;
+}
+
+body::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.5) !important;
+    border-radius: 4px !important;
+}
+
+body::-webkit-scrollbar-track {
+    background: transparent !important;
+}
