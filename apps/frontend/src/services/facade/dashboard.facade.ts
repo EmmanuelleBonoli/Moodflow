@@ -15,7 +15,25 @@ export class DashboardFacade {
     async createTask(task: Partial<Task>): Promise<void> {
         try {
             const taskCreated: Task = await taskApi.create(task);
-            console.log(taskCreated);
+            this.dashboardStore.addTask(taskCreated);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async updateTask(task: Task): Promise<void> {
+        try {
+            await taskApi.update(task);
+            this.dashboardStore.updateTask(task);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async deleteTask(taskId: string): Promise<void> {
+        try {
+            await taskApi.delete(taskId);
+            this.dashboardStore.deleteTask(taskId);
         } catch (error) {
             throw error;
         }
