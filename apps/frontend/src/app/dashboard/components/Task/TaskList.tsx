@@ -11,6 +11,7 @@ export function TaskList() {
     const {tasks} = useDashboardStore()
     const totalTasks = useDashboardStore(state => state.tasks.length);
     const completedTasks = useDashboardStore(state => state.tasks.filter(t => t.status === 'completed').length);
+
     const [isTaskDetailsOpen, setIsTaskDetailsOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
@@ -51,10 +52,14 @@ export function TaskList() {
                     </div>
                 </div>
             </Card>
-            <TaskDetailModal
-                open={isTaskDetailsOpen}
-                onOpenChange={() => setIsTaskDetailsOpen(false)}
-                task={selectedTask}/>
+
+            {isTaskDetailsOpen ? (
+                <TaskDetailModal
+                    onOpenChange={() => setIsTaskDetailsOpen(false)}
+                    task={selectedTask}/>
+            ) : null
+            }
+
         </>
 
     );

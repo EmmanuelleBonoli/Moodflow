@@ -47,9 +47,7 @@ export function CreateTaskModal({isOpen, onClose}: CreateTaskModalProps) {
 
     async function submit(data: Partial<Task>): Promise<void> {
         try {
-
             await dashboardService.createTask(data)
-
             onClose();
             reset();
         } catch (error) {

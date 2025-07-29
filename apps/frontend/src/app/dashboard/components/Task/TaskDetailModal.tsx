@@ -3,29 +3,34 @@
 import * as React from "react"
 import {useForm} from "react-hook-form"
 import InputField from "@/components/shared/InputField"
-
-import {Task} from "@moodflow/types"
+import {z} from "zod"
+import {Task, TaskCategorySchema, TaskPrioritySchema, TaskStatusSchema} from "@moodflow/types"
 import {StickyNote, X} from "lucide-react";
 import {useEffect} from "react";
 import {SelectField} from "@/components/shared/SelectField";
+import {DashboardFacade} from "@/services/facade/dashboard.facade"
+import {toast} from "sonner";
+import {ConfirmDialog} from "@/components/shared/ConfirmDialog";
 
 type FormValues = {
     title: string
     description?: string | null
-    priority: "low" | "medium" | "high"
-    category: "creative" | "admin" | "meeting" | "learning" | "personal"
-    status: "pending" | "in_progress" | "completed"
+    priority: z.infer<typeof TaskPrioritySchema>;
+    category: z.infer<typeof TaskCategorySchema>;
+    status: z.infer<typeof TaskStatusSchema>;
     estimatedDuration: number
     actualDuration?: number | null
 }
 
 interface TaskDetailModalProps {
     task: Task | null
-    open: boolean
     onOpenChange: () => void
 }
 
-export function TaskDetailModal({task, open, onOpenChange}: TaskDetailModalProps) {
+export function TaskDetailModal({task, onOpenChange}: TaskDetailModalProps) {
+    const dashboardService = new DashboardFacade();
+    const [isOpenConfirmDelete, setIsOpenConfirmDelete] = React.useState(false);
+
     const {
         register,
         handleSubmit,
@@ -60,22 +65,36 @@ export function TaskDetailModal({task, open, onOpenChange}: TaskDetailModalProps
         }
     }, [task, reset])
 
-    if (!open) return null;
-
-    function onSubmit(data: FormValues) {
+    async function onSubmit(data: FormValues): Promise<void> {
         if (!task) return
 
-        console.log("data", data)
-        //todo: do the update here
-        // onSave({
-        //     ...task,
-        //     ...data,
-        //     description: data.description || null,
-        //     actualDuration: data.actualDuration ?? null,
-        //     updatedAt: new Date(),
-        // })
+        const updatedTask = {
+            ...task,
+            ...data,
+            description: data.description || null,
+            actualDuration: data.actualDuration ?? null,
+            updatedAt: new Date(),
+            completedAt: data.status === "completed" ? new Date() : null,
+        }
+        try {
+            await dashboardService.updateTask(updatedTask);
+            toast.success("Tâche mise à jour.");
+            onOpenChange()
+        } catch (error) {
+            toast((error as Error).message)
+        }
+    }
 
-        onOpenChange()
+    async function handleDelete() {
+        if (!task) return;
+
+        try {
+            await dashboardService.deleteTask(task.id);
+            toast.success("Tâche supprimée.");
+            onOpenChange();
+        } catch (error) {
+            toast.error((error as Error).message);
+        }
     }
 
     return (
@@ -174,6 +193,14 @@ export function TaskDetailModal({task, open, onOpenChange}: TaskDetailModalProps
                     />
 
                     <div className="mt-6 flex justify-end space-x-2">
+                        <button
+                            type="button"
+                            className="text-red-600 hover:underline text-sm"
+                            onClick={() => setIsOpenConfirmDelete(true)}
+                        >
+                            Supprimer
+                        </button>
+
                         <button type="button"
                                 className="cursor-pointer px-4 py-2 rounded-xl text-gray-700 hover:bg-gray-200 transition"
                                 onClick={() => onOpenChange()}>
@@ -187,6 +214,10 @@ export function TaskDetailModal({task, open, onOpenChange}: TaskDetailModalProps
                     </div>
                 </form>
             </div>
+
+            {isOpenConfirmDelete ? (
+                <ConfirmDialog onCancel={() => setIsOpenConfirmDelete(false)} onConfirm={() => handleDelete()}/>
+            ) : null}
         </div>
     )
 }

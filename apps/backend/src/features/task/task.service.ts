@@ -7,6 +7,12 @@ import { getStartAndEndOfToday } from '../../utils/utils';
 export class TaskService {
   constructor(private prisma: PrismaService) {}
 
+  async findById(id: string): Promise<Task | null> {
+    return this.prisma.task.findUnique({
+      where: { id },
+    });
+  }
+
   async createTask(user: User, task: Task): Promise<Task> {
     return this.prisma.task.create({
       data: {
@@ -43,6 +49,19 @@ export class TaskService {
         },
       },
       orderBy: { completedAt: 'desc' },
+    });
+  }
+
+  async updateTask(id: string, task: Task): Promise<void> {
+    await this.prisma.task.update({
+      where: { id },
+      data: task,
+    });
+  }
+
+  async deleteTask(id: string): Promise<void> {
+    await this.prisma.task.delete({
+      where: { id },
     });
   }
 }

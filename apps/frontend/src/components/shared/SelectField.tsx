@@ -38,7 +38,7 @@ export const SelectField = ({
                 control={control}
                 name={name}
                 render={({field}) => (
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value ?? ""}>
                         <SelectTrigger className={className}>
                             <SelectValue placeholder={placeholder}/>
                         </SelectTrigger>

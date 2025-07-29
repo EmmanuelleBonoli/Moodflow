@@ -5,9 +5,9 @@ export const taskApi = {
     create: (data: Partial<Task>): Promise<Task> =>
         apiClient.post('/task', data),
 
-    update: (id: string, data: Partial<Task>) =>
-        apiClient.patch(`/task/${id}`, data),
+    update: (data: Partial<Task>): Promise<void> =>
+        apiClient.patch(`/task/${data.id}`, data),
 
-    delete: (id: string) =>
+    delete: (id: string): Promise<void> =>
         apiClient.delete(`/task/${id}`),
 };
