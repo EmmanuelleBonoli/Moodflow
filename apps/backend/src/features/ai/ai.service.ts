@@ -19,9 +19,6 @@ En tant qu'assistant IA spécialisé en productivité personnelle, analysez les 
 
 HUMEUR DU JOUR :
 - Niveau d'humeur : ${mood.value}/10
-- Énergie : ${mood.energy || 'Non spécifiée'}/10
-- Émotions : ${mood.emotions?.join(', ') || 'Non spécifiées'}
-- Contexte : ${mood.context || 'Aucun contexte'}
 
 TÂCHES À PLANIFIER :
 ${tasks

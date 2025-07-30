@@ -1,13 +1,15 @@
-import type { StartAndEndOfToday } from '@moodflow/types';
+import type { StartAndEndOfDay } from '@moodflow/types';
 
-export function getStartAndEndOfToday(): StartAndEndOfToday {
-  const today = new Date();
+export function getStartAndEndOfDay(
+  startOfDayData = new Date(),
+): StartAndEndOfDay {
+  const today: Date = startOfDayData;
 
-  const startOfToday = new Date(today);
-  startOfToday.setHours(0, 0, 0, 0);
+  const startOfDay = new Date(today);
+  startOfDay.setHours(0, 0, 0, 0);
 
-  const endOfToday = new Date(today);
-  endOfToday.setHours(23, 59, 59, 999);
+  const endOfDay = new Date(today);
+  endOfDay.setHours(23, 59, 59, 999);
 
-  return { startOfToday, endOfToday };
+  return { startOfDay, endOfDay };
 }

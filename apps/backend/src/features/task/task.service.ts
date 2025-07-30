@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../db/prisma/prisma.service';
 import { Task, TaskStatus, User } from '@prisma/client';
-import { getStartAndEndOfToday } from '../../utils/utils';
+import { getStartAndEndOfDay } from '../../utils/utils';
 
 @Injectable()
 export class TaskService {
@@ -37,18 +37,32 @@ export class TaskService {
   }
 
   async getCompletedTasksOfToday(userId: string): Promise<Task[]> {
-    const { startOfToday, endOfToday } = getStartAndEndOfToday();
+    const { startOfDay, endOfDay } = getStartAndEndOfDay();
 
     return this.prisma.task.findMany({
       where: {
         userId,
         status: TaskStatus.completed,
-        updatedAt: {
-          gte: startOfToday,
-          lte: endOfToday,
+        completedAt: {
+          gte: startOfDay,
+          lte: endOfDay,
         },
       },
       orderBy: { completedAt: 'desc' },
+    });
+  }
+
+  async countCompletedTasks(userId: string, date: Date): Promise<number> {
+    const { startOfDay, endOfDay } = getStartAndEndOfDay(date);
+
+    return this.prisma.task.count({
+      where: {
+        userId,
+        completedAt: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
     });
   }
 

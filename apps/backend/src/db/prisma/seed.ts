@@ -20,6 +20,7 @@ async function main() {
   await prisma.planning.deleteMany();
   await prisma.task.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.mood.deleteMany();
 
   // Créer des utilisateurs de test
   const hashedPassword = await bcrypt.hash('Password123', 12);
@@ -117,12 +118,12 @@ async function main() {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const todayFormatted = today.toISOString().split('T')[0];
 
   const todayPlanning = await prisma.planning.create({
     data: {
       userId: testUser.id,
       date: today,
-      mood: 8,
       aiRecommendations:
         "Excellente journée ! Votre niveau d'énergie est optimal. Concentrez-vous sur les tâches prioritaires le matin et gardez les tâches moins importantes pour l'après-midi.",
       totalEstimatedTime: 660, // 11h
@@ -146,18 +147,37 @@ async function main() {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   yesterday.setHours(0, 0, 0, 0);
+  const yesterdayFormatted = yesterday.toISOString().split('T')[0];
 
   const yesterdayPlanning = await prisma.planning.create({
     data: {
       userId: testUser.id,
       date: yesterday,
-      mood: 7,
       aiRecommendations:
         'Bonne journée productive. Attention à ne pas négliger les pauses.',
       totalEstimatedTime: 480,
       actualProductivity: 75,
     },
   });
+
+  await Promise.all([
+    prisma.mood.create({
+      data: {
+        userId: testUser.id,
+        date: todayFormatted,
+        value: 8,
+      },
+    }),
+    prisma.mood.create({
+      data: {
+        userId: testUser.id,
+        date: yesterdayFormatted,
+        value: 8,
+      },
+    }),
+  ]);
+
+  console.log('✅ Moods créées');
 
   await prisma.debrief.create({
     data: {

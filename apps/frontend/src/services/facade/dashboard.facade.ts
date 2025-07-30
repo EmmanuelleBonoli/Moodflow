@@ -9,7 +9,8 @@ export class DashboardFacade {
         this.dashboardStore.setTasks(dashboardData.tasks)
         this.dashboardStore.setPlanning(dashboardData.todayPlanning)
         this.dashboardStore.setDebrief(dashboardData.todayDebrief)
-        this.dashboardStore.setTodayMood(dashboardData.todayPlanning?.mood ?? 5)
+        this.dashboardStore.setTodayMood(dashboardData.todayMood?.value ?? 5)
+        this.dashboardStore.setWeeklyMood(dashboardData.weeklyMood)
     }
 
     async createTask(task: Partial<Task>): Promise<void> {

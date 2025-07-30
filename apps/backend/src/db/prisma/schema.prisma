@@ -50,8 +50,22 @@ model User {
 
   tasks     Task[]
   plannings Planning[]
+  Mood      Mood[]
 
   @@map("users")
+}
+
+model Mood {
+  id        String   @id @default(cuid())
+  userId    String
+  value     Int      @db.SmallInt
+  date      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("moods")
 }
 
 model Task {
@@ -78,7 +92,6 @@ model Planning {
   id                 String   @id @default(cuid())
   userId             String
   date               DateTime @db.Date
-  mood               Int      @db.SmallInt
   aiRecommendations  String
   totalEstimatedTime Int // minutes
   actualProductivity Int?     @db.SmallInt
