@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Debrief, Planning, User } from '@prisma/client';
+import { Debrief, Planning, User, Mood } from '@prisma/client';
 import { PlanningService } from '../planning/planning.service';
 import { DebriefService } from '../debrief/debrief.service';
 import { TaskService } from '../task/task.service';
 import { UserService } from '../user/user.service';
-import { DashboardData } from '@moodflow/types';
+import { DashboardData, MoodData } from '@moodflow/types';
+import { MoodService } from '../mood/mood.service';
 
 @Injectable()
 export class DashboardService {
@@ -13,6 +14,7 @@ export class DashboardService {
     private planningService: PlanningService,
     private debriefService: DebriefService,
     private taskService: TaskService,
+    private moodService: MoodService,
   ) {}
 
   async getDashboardData(userId: string): Promise<DashboardData> {
@@ -34,10 +36,15 @@ export class DashboardService {
       ? await this.debriefService.getTodayDebrief(todayPlanning.id)
       : null;
 
+    const todayMood: Mood | null = await this.moodService.getLastMood(userId);
+    const weeklyMood: MoodData[] = await this.moodService.getWeeklyMood(userId);
+
     return {
       tasks: [...pendingOrInProgressTasks, ...todayCompletedTasks],
       todayPlanning,
       todayDebrief,
+      todayMood,
+      weeklyMood,
     };
   }
 }

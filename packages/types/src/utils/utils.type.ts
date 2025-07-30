@@ -1,6 +1,6 @@
-export type StartAndEndOfToday = {
-    startOfToday: Date,
-    endOfToday: Date,
+export type StartAndEndOfDay = {
+    startOfDay: Date,
+    endOfDay: Date,
 };
 
 export interface StatCard {

@@ -21,6 +21,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "db:migrate": "prisma generate --schema=./src/db/prisma/schema.prisma",
     "db:dev": "prisma db push --force-reset --schema=./src/db/prisma/schema.prisma && prisma db seed --schema=./src/db/prisma/schema.prisma && prisma studio --schema=./src/db/prisma/schema.prisma",
     "db:studio": "prisma studio --schema=./src/db/prisma/schema.prisma"
   },

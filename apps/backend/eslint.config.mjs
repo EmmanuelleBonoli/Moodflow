@@ -10,7 +10,7 @@ export default tseslint.config(
       'dist/',
       'node_modules/',
       'coverage/',
-      'prisma/migrations/',
+      'src/db/prisma/seed.ts',
     ],
   },
 

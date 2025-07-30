@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
 import { UserService } from '../user/user.service';
@@ -14,9 +9,8 @@ import {
   OAuthUser,
 } from '@moodflow/types';
 import { AccountStatus, User } from '@prisma/client';
-import { sendResetPasswordMail } from '../../mail/mailer';
 import { DashboardService } from '../dashboard/dashboard.service';
-import { DashboardData } from '@moodflow/types';
+import { DashboardData, SafeUser } from '@moodflow/types';
 
 @Injectable()
 export class AuthService {
@@ -26,18 +20,22 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(loginUser: LoginUser): Promise<any> {
+  toSafeUser(user: User): SafeUser {
+    const { password, ...rest } = user;
+    return rest;
+  }
+
+  async validateUser(loginUser: LoginUser): Promise<SafeUser | null> {
     const user: User | null = await this.userService.findByEmail(
       loginUser.email,
     );
     if (user && (await compare(loginUser.password, user.password))) {
-      const { password, ...result } = user;
-      return result;
+      return this.toSafeUser(user);
     }
     return null;
   }
 
-  generateJWT(user: User): string {
+  generateJWT(user: SafeUser): string {
     const payload = {
       email: user.email,
       sub: user.id,
@@ -46,7 +44,7 @@ export class AuthService {
   }
 
   async login(loginUser: LoginUser): Promise<RegisterOrLoginUserResponse> {
-    const user: User | null = await this.validateUser(loginUser);
+    const user: SafeUser | null = await this.validateUser(loginUser);
     if (!user) {
       throw new UnauthorizedException(
         'Les identifiants saisis sont incorrects.',
@@ -120,29 +118,29 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
 
-  async forgotPassword(email: string): Promise<void> {
-    const user: User | null = await this.userService.findByEmail(email);
-    if (!user) {
-      return;
-    }
-
-    const payload = { sub: user.id };
-    const resetToken = this.jwtService.sign(payload, { expiresIn: '30m' });
-
-    await sendResetPasswordMail(user.email, resetToken);
-  }
-
-  async resetPassword(token: string, newPassword: string): Promise<void> {
-    let payload: any;
-    try {
-      payload = this.jwtService.verify(token);
-    } catch (e) {
-      throw new BadRequestException('Token invalide ou expiré.');
-    }
-    const user: User | null = await this.userService.findById(payload.sub);
-    if (!user) throw new NotFoundException('Utilisateur introuvable.');
-
-    const hashedPassword: string = await hash(newPassword, 10);
-    await this.userService.update(user.id, { password: hashedPassword });
-  }
+  // async forgotPassword(email: string): Promise<void> {
+  //   const user: User | null = await this.userService.findByEmail(email);
+  //   if (!user) {
+  //     return;
+  //   }
+  //
+  //   const payload = { sub: user.id };
+  //   const resetToken = this.jwtService.sign(payload, { expiresIn: '30m' });
+  //
+  //   await sendResetPasswordMail(user.email, resetToken);
+  // }
+  //
+  // async resetPassword(token: string, newPassword: string): Promise<void> {
+  //   let payload: PayloadUser;
+  //   try {
+  //     payload = this.jwtService.verify(token);
+  //   } catch (e) {
+  //     throw new BadRequestException('Token invalide ou expiré.');
+  //   }
+  //   const user: User | null = await this.userService.findById(payload.sub);
+  //   if (!user) throw new NotFoundException('Utilisateur introuvable.');
+  //
+  //   const hashedPassword: string = await hash(newPassword, 10);
+  //   await this.userService.update(user.id, { password: hashedPassword });
+  // }
 }
