@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../db/prisma/prisma.service';
-import { Mood } from '@prisma/client';
-import { MoodData } from '@moodflow/types';
+import { Mood, Task, User } from '@prisma/client';
+import { MoodData, NewMood } from '@moodflow/types';
 import { TaskService } from '../task/task.service';
 
 @Injectable()
@@ -28,7 +28,7 @@ export class MoodService {
         userId,
       },
       orderBy: {
-        date: 'desc',
+        date: 'asc',
       },
       take: 7,
     });
@@ -36,16 +36,51 @@ export class MoodService {
     const moodData: MoodData[] = [];
 
     for (const mood of moods) {
-      const completedTasksCount: number =
-        await this.taskService.countCompletedTasks(userId, new Date(mood.date));
+      const completedTasks: Task[] =
+        await this.taskService.getCompletedTasksOfDay(
+          userId,
+          new Date(mood.date),
+        );
 
       moodData.push({
         date: mood.date,
         mood: mood.value,
-        productivity: completedTasksCount,
+        taskCompleted: {
+          total: completedTasks.length,
+          tasksId: [...completedTasks.map(task => task.id)],
+        },
       });
     }
 
     return moodData;
+  }
+
+  async createMood(user: User, newMood: NewMood): Promise<void> {
+    const existingMood: Mood | null = await this.prisma.mood.findFirst({
+      where: {
+        date: newMood.date,
+        userId: user.id,
+      },
+    });
+
+    if (!existingMood) {
+      await this.prisma.mood.create({
+        data: {
+          userId: user.id,
+          value: newMood.mood,
+          date: newMood.date,
+        },
+      });
+    } else {
+      await this.prisma.mood.update({
+        where: {
+          id: existingMood.id,
+        },
+        data: {
+          ...existingMood,
+          value: newMood.mood,
+        },
+      });
+    }
   }
 }

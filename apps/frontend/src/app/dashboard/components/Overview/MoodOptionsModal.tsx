@@ -1,5 +1,7 @@
 import {X} from 'lucide-react';
 import {useDashboardStore} from "@/stores/dashboardStore";
+import {toast} from "sonner";
+import {DashboardFacade} from "@/services/facade/dashboard.facade";
 
 interface MoodOption {
     value: number;
@@ -99,13 +101,20 @@ const moodOptions: MoodOption[] = [
 ];
 
 export function MoodModal({isOpen, onClose}: MoodModalProps) {
-    const {todayMood, setTodayMood} = useDashboardStore();
+    const {todayMood} = useDashboardStore();
+    const dashboardService = new DashboardFacade();
+
     if (!isOpen) return null;
 
-    const handleMoodSelect = (mood: number) => {
-        setTodayMood(mood);
-        onClose();
-    };
+    async function handleMoodSelect(mood: number): Promise<void> {
+        try {
+            const today: string = new Date().toISOString().split('T')[0];
+            await dashboardService.updateMood({mood, date: today});
+            onClose();
+        } catch (error) {
+            toast.error((error as Error).message);
+        }
+    }
 
     return (
         <div

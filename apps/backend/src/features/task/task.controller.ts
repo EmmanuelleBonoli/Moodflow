@@ -27,7 +27,7 @@ export class TaskController {
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtAuthGuard)
   async createTask(@getUser() user: User, @Body() task: Task): Promise<Task> {
-    return this.taskService.createTask(user, task);
+    return await this.taskService.createTask(user, task);
   }
 
   @Patch(':taskId')

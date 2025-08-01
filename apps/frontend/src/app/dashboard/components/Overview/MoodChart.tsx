@@ -13,13 +13,22 @@ import {useDashboardStore} from "@/stores/dashboardStore";
 
 export function MoodChart() {
     const {weeklyMood} = useDashboardStore()
+
+    const chartData = weeklyMood.map(entry => ({
+        ...entry,
+        date: new Date(entry.date),
+        productivity: entry.taskCompleted.total,
+    }));
+
     return (
         <Card>
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Humeur & Productivité</h3>
             <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={weeklyMood}>
+                <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff"/>
-                    <XAxis dataKey="date" stroke="#6b7280"/>
+                    <XAxis dataKey="date" tickFormatter={(date: Date) =>
+                        date.toLocaleDateString("fr-FR", {day: "2-digit", month: "2-digit"})
+                    } stroke="#6b7280"/>
                     <YAxis stroke="#6b7280"/>
                     <Tooltip
                         contentStyle={{

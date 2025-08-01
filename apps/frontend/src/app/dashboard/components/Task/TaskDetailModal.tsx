@@ -4,13 +4,14 @@ import * as React from "react"
 import {useForm} from "react-hook-form"
 import InputField from "@/components/shared/InputField"
 import {z} from "zod"
-import {Task, TaskCategorySchema, TaskPrioritySchema, TaskStatusSchema} from "@moodflow/types"
+import {Task, TaskCategorySchema, TaskPrioritySchema, TaskStatusSchema, UpdateWeeklyMood} from "@moodflow/types"
 import {StickyNote, X} from "lucide-react";
 import {useEffect} from "react";
 import {SelectField} from "@/components/shared/SelectField";
 import {DashboardFacade} from "@/services/facade/dashboard.facade"
 import {toast} from "sonner";
 import {ConfirmDialog} from "@/components/shared/ConfirmDialog";
+import {getToday} from "@/utils/utils";
 
 type FormValues = {
     title: string
@@ -68,16 +69,40 @@ export function TaskDetailModal({task, onOpenChange}: TaskDetailModalProps) {
     async function onSubmit(data: FormValues): Promise<void> {
         if (!task) return
 
+        const isNewCompletedTask: boolean = task.status !== "completed" && data.status === "completed";
+        const isNoLongerCompleted: boolean = task.status === "completed" && data.status !== "completed";
+
         const updatedTask = {
             ...task,
             ...data,
             description: data.description || null,
             actualDuration: data.actualDuration ?? null,
             updatedAt: new Date(),
-            completedAt: data.status === "completed" ? new Date() : null,
+            completedAt: isNewCompletedTask
+                ? getToday()
+                : isNoLongerCompleted
+                    ? null
+                    : task.completedAt,
         }
+
+        let productivityUpdate: UpdateWeeklyMood | undefined;
+
+        if (isNewCompletedTask) {
+            productivityUpdate = {
+                productivity: +1,
+                date: updatedTask.completedAt!,
+                taskId: task.id,
+            };
+        } else if (isNoLongerCompleted) {
+            productivityUpdate = {
+                productivity: -1,
+                date: task.completedAt!,
+                taskId: task.id,
+            };
+        }
+
         try {
-            await dashboardService.updateTask(updatedTask);
+            await dashboardService.updateTask(updatedTask, productivityUpdate);
             toast.success("Tâche mise à jour.");
             onOpenChange()
         } catch (error) {

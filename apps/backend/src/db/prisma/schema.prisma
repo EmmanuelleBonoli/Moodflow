@@ -59,7 +59,7 @@ model Mood {
   id        String   @id @default(cuid())
   userId    String
   value     Int      @db.SmallInt
-  date      String
+  date      DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

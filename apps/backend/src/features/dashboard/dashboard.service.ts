@@ -26,7 +26,7 @@ export class DashboardService {
 
     const [pendingOrInProgressTasks, todayCompletedTasks] = await Promise.all([
       await this.taskService.getPendingAndProgressTasks(userId),
-      await this.taskService.getCompletedTasksOfToday(userId),
+      await this.taskService.getCompletedTasksOfDay(userId, new Date()),
     ]);
 
     const todayPlanning: Planning | null =
