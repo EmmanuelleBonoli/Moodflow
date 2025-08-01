@@ -1,16 +1,23 @@
 import {useDashboardStore} from "@/stores/dashboardStore";
-import {DashboardData, Task} from "@moodflow/types";
-import {taskApi} from "@/services/api";
+import {DashboardData, NewMood, Task, UpdateWeeklyMood} from "@moodflow/types";
+import {moodApi, taskApi} from "@/services/api";
 
 export class DashboardFacade {
     private dashboardStore = useDashboardStore();
 
     updateDashboardStore(dashboardData: DashboardData) {
+
         this.dashboardStore.setTasks(dashboardData.tasks)
         this.dashboardStore.setPlanning(dashboardData.todayPlanning)
         this.dashboardStore.setDebrief(dashboardData.todayDebrief)
         this.dashboardStore.setTodayMood(dashboardData.todayMood?.value ?? 5)
-        this.dashboardStore.setWeeklyMood(dashboardData.weeklyMood)
+
+        const normalizedWeeklyMood = dashboardData.weeklyMood.map(entry => ({
+            ...entry,
+            date: new Date(entry.date),
+        }));
+
+        this.dashboardStore.setWeeklyMood(normalizedWeeklyMood)
     }
 
     async createTask(task: Partial<Task>): Promise<void> {
@@ -22,10 +29,14 @@ export class DashboardFacade {
         }
     }
 
-    async updateTask(task: Task): Promise<void> {
+    async updateTask(task: Task, productivityUpdate?: UpdateWeeklyMood): Promise<void> {
         try {
             await taskApi.update(task);
             this.dashboardStore.updateTask(task);
+
+            if (productivityUpdate) {
+                this.dashboardStore.updateWeeklyMoodProductivity(productivityUpdate);
+            }
         } catch (error) {
             throw error;
         }
@@ -35,6 +46,15 @@ export class DashboardFacade {
         try {
             await taskApi.delete(taskId);
             this.dashboardStore.deleteTask(taskId);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async updateMood(newMood: NewMood): Promise<void> {
+        try {
+            await moodApi.update(newMood);
+            this.dashboardStore.setTodayMood(newMood.mood);
         } catch (error) {
             throw error;
         }

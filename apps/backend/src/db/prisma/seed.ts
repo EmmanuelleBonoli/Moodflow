@@ -118,7 +118,6 @@ async function main() {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const todayFormatted = today.toISOString().split('T')[0];
 
   const todayPlanning = await prisma.planning.create({
     data: {
@@ -147,7 +146,6 @@ async function main() {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   yesterday.setHours(0, 0, 0, 0);
-  const yesterdayFormatted = yesterday.toISOString().split('T')[0];
 
   const yesterdayPlanning = await prisma.planning.create({
     data: {
@@ -164,14 +162,14 @@ async function main() {
     prisma.mood.create({
       data: {
         userId: testUser.id,
-        date: todayFormatted,
+        date: today,
         value: 8,
       },
     }),
     prisma.mood.create({
       data: {
         userId: testUser.id,
-        date: yesterdayFormatted,
+        date: yesterday,
         value: 8,
       },
     }),

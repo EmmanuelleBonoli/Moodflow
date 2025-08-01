@@ -36,8 +36,8 @@ export class TaskService {
     });
   }
 
-  async getCompletedTasksOfToday(userId: string): Promise<Task[]> {
-    const { startOfDay, endOfDay } = getStartAndEndOfDay();
+  async getCompletedTasksOfDay(userId: string, date: Date): Promise<Task[]> {
+    const { startOfDay, endOfDay } = getStartAndEndOfDay(date);
 
     return this.prisma.task.findMany({
       where: {
@@ -49,20 +49,6 @@ export class TaskService {
         },
       },
       orderBy: { completedAt: 'desc' },
-    });
-  }
-
-  async countCompletedTasks(userId: string, date: Date): Promise<number> {
-    const { startOfDay, endOfDay } = getStartAndEndOfDay(date);
-
-    return this.prisma.task.count({
-      where: {
-        userId,
-        completedAt: {
-          gte: startOfDay,
-          lte: endOfDay,
-        },
-      },
     });
   }
 
