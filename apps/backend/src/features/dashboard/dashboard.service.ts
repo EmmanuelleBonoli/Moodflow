@@ -4,7 +4,7 @@ import { PlanningService } from '../planning/planning.service';
 import { DebriefService } from '../debrief/debrief.service';
 import { TaskService } from '../task/task.service';
 import { UserService } from '../user/user.service';
-import { DashboardData, MoodData } from '@moodflow/types';
+import { DashboardData, MoodData, Task, DashboardTotal } from '@moodflow/types';
 import { MoodService } from '../mood/mood.service';
 
 @Injectable()
@@ -24,9 +24,9 @@ export class DashboardService {
       throw new Error('User not found');
     }
 
-    const [pendingOrInProgressTasks, todayCompletedTasks] = await Promise.all([
-      await this.taskService.getPendingAndProgressTasks(userId),
-      await this.taskService.getCompletedTasksOfDay(userId, new Date()),
+    const [tasks, total]: [Task[], DashboardTotal] = await Promise.all([
+      this.taskService.getPaginatedTasks(userId),
+      this.taskService.countTasksTotal(userId),
     ]);
 
     const todayPlanning: Planning | null =
@@ -40,11 +40,12 @@ export class DashboardService {
     const weeklyMood: MoodData[] = await this.moodService.getWeeklyMood(userId);
 
     return {
-      tasks: [...pendingOrInProgressTasks, ...todayCompletedTasks],
+      tasks,
       todayPlanning,
       todayDebrief,
       todayMood,
       weeklyMood,
+      total,
     };
   }
 }

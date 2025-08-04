@@ -2,7 +2,7 @@ import {StickyNote, X} from 'lucide-react';
 import {z} from 'zod';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useForm} from 'react-hook-form';
-import InputField from '@/components/shared/InputField'; // ton composant
+import InputField from '@/components/shared/InputField';
 import {useEffect} from 'react';
 import {SelectField} from "@/components/shared/SelectField";
 import * as React from "react";
@@ -53,9 +53,8 @@ export function CreateTaskModal({isOpen, onClose}: CreateTaskModalProps) {
         } catch (error) {
             toast((error as Error).message)
         }
-    };
+    }
 
-    // Reset le form quand la modale est fermée
     useEffect(() => {
         if (!isOpen) reset();
     }, [isOpen, reset]);

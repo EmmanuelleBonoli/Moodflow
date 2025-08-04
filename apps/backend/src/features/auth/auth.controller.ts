@@ -19,7 +19,7 @@ import {
   OAuthUser,
 } from '@moodflow/types';
 import { AuthGuard } from '@nestjs/passport';
-import { getUser } from '../../decorators/get-user.decorator';
+import { GetUser } from '../../decorators/GetUser.decorator';
 import { User } from '@prisma/client';
 import { JwtAuthGuard } from '../../guards/JwtAuthGuard';
 
@@ -45,7 +45,7 @@ export class AuthController {
   @Get('/refreshToken')
   @UseGuards(JwtAuthGuard)
   async refreshToken(
-    @getUser() user: User,
+    @GetUser() user: User,
   ): Promise<RegisterOrLoginUserResponse> {
     return this.authService.refreshToken(user);
   }

@@ -1,29 +1,30 @@
 import {useDashboardStore} from "@/stores/dashboardStore";
 import {DashboardData, NewMood, Task, UpdateWeeklyMood} from "@moodflow/types";
 import {moodApi, taskApi} from "@/services/api";
+import {normalizeDates} from "@/utils/utils";
 
 export class DashboardFacade {
     private dashboardStore = useDashboardStore();
 
-    updateDashboardStore(dashboardData: DashboardData) {
+    updateDashboardStore(dashboardData: DashboardData): void {
+        const normalizedDashboard: DashboardData = normalizeDates(dashboardData);
 
-        this.dashboardStore.setTasks(dashboardData.tasks)
-        this.dashboardStore.setPlanning(dashboardData.todayPlanning)
-        this.dashboardStore.setDebrief(dashboardData.todayDebrief)
-        this.dashboardStore.setTodayMood(dashboardData.todayMood?.value ?? 5)
-
-        const normalizedWeeklyMood = dashboardData.weeklyMood.map(entry => ({
-            ...entry,
-            date: new Date(entry.date),
-        }));
-
-        this.dashboardStore.setWeeklyMood(normalizedWeeklyMood)
+        this.dashboardStore.setTasksForPage(1, normalizedDashboard.tasks)
+        this.dashboardStore.setDashboardTotal(normalizedDashboard.total)
+        this.dashboardStore.setPlanning(normalizedDashboard.todayPlanning)
+        this.dashboardStore.setDebrief(normalizedDashboard.todayDebrief)
+        this.dashboardStore.setTodayMood(normalizedDashboard.todayMood?.value ?? 5)
+        this.dashboardStore.setWeeklyMood(normalizedDashboard.weeklyMood)
     }
 
     async createTask(task: Partial<Task>): Promise<void> {
         try {
             const taskCreated: Task = await taskApi.create(task);
             this.dashboardStore.addTask(taskCreated);
+            this.dashboardStore.setDashboardTotal({
+                tasks: this.dashboardStore.dashboardTotal.tasks + 1,
+                completedTasks: this.dashboardStore.dashboardTotal.completedTasks
+            })
         } catch (error) {
             throw error;
         }
@@ -36,16 +37,24 @@ export class DashboardFacade {
 
             if (productivityUpdate) {
                 this.dashboardStore.updateWeeklyMoodProductivity(productivityUpdate);
+                this.dashboardStore.setDashboardTotal({
+                    tasks: this.dashboardStore.dashboardTotal.tasks,
+                    completedTasks: this.dashboardStore.dashboardTotal.completedTasks + productivityUpdate.productivity
+                })
             }
         } catch (error) {
             throw error;
         }
     }
 
-    async deleteTask(taskId: string): Promise<void> {
+    async deleteTask(task: Task): Promise<void> {
         try {
-            await taskApi.delete(taskId);
-            this.dashboardStore.deleteTask(taskId);
+            await taskApi.delete(task.id);
+            this.dashboardStore.deleteTask(task.id);
+            this.dashboardStore.setDashboardTotal({
+                tasks: this.dashboardStore.dashboardTotal.tasks - 1,
+                completedTasks: task.status === "completed" ? this.dashboardStore.dashboardTotal.completedTasks - 1 : this.dashboardStore.dashboardTotal.completedTasks
+            })
         } catch (error) {
             throw error;
         }
@@ -55,6 +64,19 @@ export class DashboardFacade {
         try {
             await moodApi.update(newMood);
             this.dashboardStore.setTodayMood(newMood.mood);
+            this.dashboardStore.updateWeeklyMoodTodayMood(newMood);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async getPaginatedTasks(page: number, pageSize: number): Promise<void> {
+        try {
+            const existing = this.dashboardStore.tasksByPage[page];
+            if (!existing) {
+                const tasksData: Task[] = await taskApi.list(page, pageSize)
+                this.dashboardStore.setTasksForPage(page, tasksData);
+            }
         } catch (error) {
             throw error;
         }

@@ -9,9 +9,11 @@ import {
   Param,
   Delete,
   NotFoundException,
+  Get,
+  Query,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
-import { getUser } from '../../decorators/get-user.decorator';
+import { GetUser } from '../../decorators/GetUser.decorator';
 import { Task, User } from '@prisma/client';
 import { JwtAuthGuard } from '../../guards/JwtAuthGuard';
 import { UserService } from '../user/user.service';
@@ -23,10 +25,25 @@ export class TaskController {
     private userService: UserService,
   ) {}
 
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  async getList(
+    @GetUser() user: User,
+    @Query('page') page: string,
+    @Query('pageSize') pageSize: string,
+  ): Promise<Task[]> {
+    return await this.taskService.getPaginatedTasks(
+      user.id,
+      parseInt(page, 10),
+      parseInt(pageSize, 10),
+    );
+  }
+
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtAuthGuard)
-  async createTask(@getUser() user: User, @Body() task: Task): Promise<Task> {
+  async createTask(@GetUser() user: User, @Body() task: Task): Promise<Task> {
     return await this.taskService.createTask(user, task);
   }
 
@@ -34,7 +51,7 @@ export class TaskController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   async updateTask(
-    @getUser() user: User,
+    @GetUser() user: User,
     @Body() task: Task,
     @Param('taskId') taskId: string,
   ): Promise<void> {
@@ -46,7 +63,7 @@ export class TaskController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   async deleteTask(
-    @getUser() user: User,
+    @GetUser() user: User,
     @Param('taskId') taskId: string,
   ): Promise<void> {
     const existingTask: Task | null = await this.taskService.findById(taskId);

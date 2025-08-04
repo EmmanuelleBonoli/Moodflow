@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../db/prisma/prisma.service';
 import { Task, TaskStatus, User } from '@prisma/client';
+import { DashboardTotal } from '@moodflow/types';
 import { getStartAndEndOfDay } from '../../utils/utils';
 
 @Injectable()
@@ -22,18 +23,91 @@ export class TaskService {
     });
   }
 
-  async getPendingAndProgressTasks(userId: string): Promise<Task[]> {
-    return this.prisma.task.findMany({
+  async countTasksTotal(userId: string): Promise<DashboardTotal> {
+    const tasks: number = await this.prisma.task.count({
+      where: { userId },
+    });
+
+    const completedTasks: number = await this.prisma.task.count({
       where: {
         userId,
-        status: TaskStatus.pending || TaskStatus.in_progress,
+        status: TaskStatus.completed,
       },
-      orderBy: [
-        { priority: 'desc' },
-        { createdAt: 'asc' },
-        { updatedAt: 'desc' },
-      ],
     });
+
+    return {
+      tasks,
+      completedTasks,
+    };
+  }
+
+  async getPaginatedTasks(
+    userId: string,
+    page: number = 1,
+    pageSize: number = 10,
+  ): Promise<Task[]> {
+    const offset: number = (page - 1) * pageSize;
+
+    // Étape A : combien de tâches actives existent au total ?
+    const activeTasksCount = await this.prisma.task.count({
+      where: {
+        userId,
+        status: {
+          in: [TaskStatus.pending, TaskStatus.in_progress],
+        },
+      },
+    });
+
+    let activeTasks: Task[] = [];
+    let completedTasks: Task[] = [];
+
+    // Cas 1 : on est encore dans les actives
+    if (offset < activeTasksCount) {
+      activeTasks = await this.prisma.task.findMany({
+        where: {
+          userId,
+          status: {
+            in: [TaskStatus.pending, TaskStatus.in_progress],
+          },
+        },
+        orderBy: [
+          { priority: 'desc' },
+          { createdAt: 'asc' },
+          { updatedAt: 'desc' },
+        ],
+        skip: offset,
+        take: pageSize,
+      });
+
+      const remainingSlots = pageSize - activeTasks.length;
+
+      // On complète avec des completed si nécessaire
+      if (remainingSlots > 0) {
+        completedTasks = await this.prisma.task.findMany({
+          where: {
+            userId,
+            status: TaskStatus.completed,
+          },
+          orderBy: { completedAt: 'desc' },
+          take: remainingSlots,
+        });
+      }
+    } else {
+      // Cas 2 : on a épuisé toutes les actives → on passe aux completed
+      const completedOffset = offset - activeTasksCount;
+
+      completedTasks = await this.prisma.task.findMany({
+        where: {
+          userId,
+          status: TaskStatus.completed,
+        },
+        orderBy: { completedAt: 'desc' },
+        skip: completedOffset,
+        take: pageSize,
+      });
+    }
+
+    return [...activeTasks, ...completedTasks];
   }
 
   async getCompletedTasksOfDay(userId: string, date: Date): Promise<Task[]> {

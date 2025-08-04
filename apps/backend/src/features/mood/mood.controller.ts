@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../guards/JwtAuthGuard';
 import { NewMood } from '@moodflow/types';
-import { getUser } from '../../decorators/get-user.decorator';
+import { GetUser } from '../../decorators/GetUser.decorator';
 import { User } from '@prisma/client';
 import { MoodService } from './mood.service';
 
@@ -20,7 +20,7 @@ export class MoodController {
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtAuthGuard)
   async createMood(
-    @getUser() user: User,
+    @GetUser() user: User,
     @Body() mood: NewMood,
   ): Promise<void> {
     await this.moodService.createMood(user, mood);

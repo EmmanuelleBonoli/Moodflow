@@ -114,7 +114,7 @@ export function TaskDetailModal({task, onOpenChange}: TaskDetailModalProps) {
         if (!task) return;
 
         try {
-            await dashboardService.deleteTask(task.id);
+            await dashboardService.deleteTask(task);
             toast.success("Tâche supprimée.");
             onOpenChange();
         } catch (error) {

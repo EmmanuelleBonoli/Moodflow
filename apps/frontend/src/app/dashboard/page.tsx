@@ -7,6 +7,7 @@ import {Planning} from './components/Planning/Planning';
 import Analytics from './components/Analytics/Analytics';
 import {Debrief} from './components/Debrief/Debrief';
 import {TabType} from '@moodflow/types';
+import {Tasks} from "@/app/dashboard/components/Task/Tasks";
 
 export default function Dashboard() {
     const [selectedTab, setSelectedTab] = useState<TabType>('overview');
@@ -16,9 +17,12 @@ export default function Dashboard() {
             case 'overview':
                 return (
                     <Overview
+                        onSwitchToTasks={() => setSelectedTab('tasks')}
                         onSwitchToPlanning={() => setSelectedTab('planning')}
                     />
                 );
+            case 'tasks':
+                return <Tasks/>
             case 'planning':
                 return <Planning/>;
             case 'analytics':
