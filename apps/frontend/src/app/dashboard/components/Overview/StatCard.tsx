@@ -6,12 +6,8 @@ interface StatCardProps {
     openMoodModal: () => void;
 }
 
-const TODAY_PRODUCTIVITY = 88; // TODO: remooooove
-
 export function StatCard({openMoodModal}: StatCardProps) {
-    const {todayMood} = useDashboardStore()
-    const totalTasks = useDashboardStore(state => state.tasks.length);
-    const completedTasks = useDashboardStore(state => state.tasks.filter(t => t.status === 'completed').length);
+    const {todayMood, dashboardTotal} = useDashboardStore()
 
     const getMoodEmoji = (mood: number) => {
         const emojiMap: { [key: number]: string } = {
@@ -41,14 +37,14 @@ export function StatCard({openMoodModal}: StatCardProps) {
         },
         {
             title: 'Tâches complétées',
-            value: `${completedTasks}/${totalTasks}`,
+            value: `${dashboardTotal.completedTasks}/${dashboardTotal.tasks}`,
             icon: <CheckCircle className="w-6 h-6 text-white"/>,
             gradient: 'bg-gradient-to-r from-purple-400 to-indigo-500',
             shadowColor: 'shadow-purple-500/5'
         },
         {
             title: 'Productivité',
-            value: `${TODAY_PRODUCTIVITY}%`,
+            value: `${Math.round((dashboardTotal.completedTasks / dashboardTotal.tasks) * 100)}%`,
             icon: <TrendingUp className="w-6 h-6 text-white"/>,
             gradient: 'bg-gradient-to-r from-teal-400 to-cyan-500',
             shadowColor: 'shadow-teal-500/5'

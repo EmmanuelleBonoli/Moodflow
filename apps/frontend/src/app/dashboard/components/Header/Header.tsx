@@ -3,9 +3,19 @@
 import {Brain, Settings, User} from 'lucide-react';
 import SwitchTheme from "./SwitchTheme";
 import {useUserStore} from "@/stores/userStore";
+import {useEffect, useState} from "react";
 
 export function Header() {
     const {userName} = useUserStore()
+    const [showGreeting, setShowGreeting] = useState(true);
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setShowGreeting(false);
+        }, 8000);
+
+        return () => clearTimeout(timeout);
+    }, []);
 
     return (
         <header
@@ -20,7 +30,11 @@ export function Header() {
                         <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                             MoodFlow
                         </h1>
-                        <p className="text-sm text-gray-500">Bonjour {userName} ! ✨</p>
+                        {showGreeting && (
+                            <p className="text-sm text-gray-500 transition-opacity duration-500">
+                                Bonjour {userName} ! ✨
+                            </p>
+                        )}
                     </hgroup>
                 </div>
 

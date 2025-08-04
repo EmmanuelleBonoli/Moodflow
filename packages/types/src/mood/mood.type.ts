@@ -18,7 +18,7 @@ export type MoodData = {
 }
 
 export type NewMood = {
-    date: string;
+    date: Date;
     mood: number;
 }
 

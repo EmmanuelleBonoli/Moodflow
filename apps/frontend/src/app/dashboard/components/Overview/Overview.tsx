@@ -6,10 +6,11 @@ import {MoodModal} from "./MoodOptionsModal";
 import {PlanningAssistant} from "./PlanningAssistant";
 
 interface OverviewProps {
-    onSwitchToPlanning?: () => void;
+    onSwitchToPlanning: () => void;
+    onSwitchToTasks: () => void;
 }
 
-export function Overview({onSwitchToPlanning}: OverviewProps) {
+export function Overview({onSwitchToPlanning, onSwitchToTasks}: OverviewProps) {
     const [isMoodModalOpen, setIsMoodModalOpen] = useState(false);
 
     return (
@@ -18,7 +19,7 @@ export function Overview({onSwitchToPlanning}: OverviewProps) {
             <PlanningAssistant onSwitchToPlanning={() => onSwitchToPlanning()}/>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <TaskList/>
+                <TaskList onSwitchToTasks={() => onSwitchToTasks()}/>
                 <MoodChart/>
             </div>
 

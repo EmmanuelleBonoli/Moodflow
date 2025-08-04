@@ -9,4 +9,10 @@ export type DashboardData = {
     todayDebrief: Debrief | null;
     todayMood: Mood | null;
     weeklyMood: MoodData[];
+    total: DashboardTotal;
+}
+
+export type DashboardTotal = {
+    tasks: number;
+    completedTasks: number;
 }

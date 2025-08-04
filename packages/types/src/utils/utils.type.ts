@@ -11,4 +11,4 @@ export interface StatCard {
     shadowColor: string;
 }
 
-export type TabType = 'overview' | 'planning' | 'analytics' | 'debrief';
+export type TabType = 'overview' | 'tasks' | 'planning' | 'analytics' | 'debrief';

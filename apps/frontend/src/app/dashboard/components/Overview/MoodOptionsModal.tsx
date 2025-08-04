@@ -2,6 +2,7 @@ import {X} from 'lucide-react';
 import {useDashboardStore} from "@/stores/dashboardStore";
 import {toast} from "sonner";
 import {DashboardFacade} from "@/services/facade/dashboard.facade";
+import {getToday} from "@/utils/utils";
 
 interface MoodOption {
     value: number;
@@ -108,7 +109,7 @@ export function MoodModal({isOpen, onClose}: MoodModalProps) {
 
     async function handleMoodSelect(mood: number): Promise<void> {
         try {
-            const today: string = new Date().toISOString().split('T')[0];
+            const today: Date = getToday();
             await dashboardService.updateMood({mood, date: today});
             onClose();
         } catch (error) {
