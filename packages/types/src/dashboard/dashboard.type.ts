@@ -13,6 +13,8 @@ export type DashboardData = {
 }
 
 export type DashboardTotal = {
-    tasks: number;
-    completedTasks: number;
+    totalTasks: number;
+    totalCompletedTasks: number;
+    filteredTasks: number;
+    filteredCompletedTasks: number;
 }

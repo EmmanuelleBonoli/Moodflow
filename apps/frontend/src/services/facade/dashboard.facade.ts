@@ -1,30 +1,36 @@
 import {useDashboardStore} from "@/stores/dashboardStore";
-import {DashboardData, NewMood, Task, UpdateWeeklyMood} from "@moodflow/types";
-import {moodApi, taskApi} from "@/services/api";
-import {normalizeDates} from "@/utils/utils";
+import {
+    DashboardData,
+    NewMood,
+    Task,
+    UpdateWeeklyMood
+} from "@moodflow/types";
+import {moodApi} from "@/services/api";
+import {normalizeDates, makeQueryParamsKey} from "@/utils/utils";
+import {useCreateTask, useDeleteTask, useUpdateTask} from "@/hooks/useTasks";
 
 export class DashboardFacade {
-    private dashboardStore = useDashboardStore();
+    private dashboardStore = useDashboardStore.getState()
+
+    private createTaskMutation = useCreateTask()
+    private updateTaskMutation = useUpdateTask()
+    private deleteTaskMutation = useDeleteTask()
+
 
     updateDashboardStore(dashboardData: DashboardData): void {
-        const normalizedDashboard: DashboardData = normalizeDates(dashboardData);
-
-        this.dashboardStore.setTasksForPage(1, normalizedDashboard.tasks)
-        this.dashboardStore.setDashboardTotal(normalizedDashboard.total)
-        this.dashboardStore.setPlanning(normalizedDashboard.todayPlanning)
-        this.dashboardStore.setDebrief(normalizedDashboard.todayDebrief)
-        this.dashboardStore.setTodayMood(normalizedDashboard.todayMood?.value ?? 5)
-        this.dashboardStore.setWeeklyMood(normalizedDashboard.weeklyMood)
+        const normalized = normalizeDates(dashboardData)
+        this.dashboardStore.setPlanning(normalized.todayPlanning)
+        this.dashboardStore.setDebrief(normalized.todayDebrief)
+        this.dashboardStore.setTodayMood(normalized.todayMood?.value ?? 5)
+        this.dashboardStore.setWeeklyMood(normalized.weeklyMood)
     }
 
     async createTask(task: Partial<Task>): Promise<void> {
         try {
-            const taskCreated: Task = await taskApi.create(task);
-            this.dashboardStore.addTask(taskCreated);
-            this.dashboardStore.setDashboardTotal({
-                tasks: this.dashboardStore.dashboardTotal.tasks + 1,
-                completedTasks: this.dashboardStore.dashboardTotal.completedTasks
-            })
+            const {currentPage, pageSize, taskFilters} = this.dashboardStore;
+            const queryParamsKey: string = makeQueryParamsKey(currentPage, pageSize, taskFilters);
+
+            await this.createTaskMutation.mutateAsync({task, queryParamsKey})
         } catch (error) {
             throw error;
         }
@@ -32,15 +38,13 @@ export class DashboardFacade {
 
     async updateTask(task: Task, productivityUpdate?: UpdateWeeklyMood): Promise<void> {
         try {
-            await taskApi.update(task);
-            this.dashboardStore.updateTask(task);
+            const {currentPage, pageSize, taskFilters} = this.dashboardStore;
+            const queryParamsKey: string = makeQueryParamsKey(currentPage, pageSize, taskFilters);
+
+            await this.updateTaskMutation.mutateAsync({task, queryParamsKey})
 
             if (productivityUpdate) {
                 this.dashboardStore.updateWeeklyMoodProductivity(productivityUpdate);
-                this.dashboardStore.setDashboardTotal({
-                    tasks: this.dashboardStore.dashboardTotal.tasks,
-                    completedTasks: this.dashboardStore.dashboardTotal.completedTasks + productivityUpdate.productivity
-                })
             }
         } catch (error) {
             throw error;
@@ -49,12 +53,10 @@ export class DashboardFacade {
 
     async deleteTask(task: Task): Promise<void> {
         try {
-            await taskApi.delete(task.id);
-            this.dashboardStore.deleteTask(task.id);
-            this.dashboardStore.setDashboardTotal({
-                tasks: this.dashboardStore.dashboardTotal.tasks - 1,
-                completedTasks: task.status === "completed" ? this.dashboardStore.dashboardTotal.completedTasks - 1 : this.dashboardStore.dashboardTotal.completedTasks
-            })
+            const {currentPage, pageSize, taskFilters} = this.dashboardStore;
+            const queryParamsKey: string = makeQueryParamsKey(currentPage, pageSize, taskFilters);
+
+            await this.deleteTaskMutation.mutateAsync({taskId: task.id, queryParamsKey})
         } catch (error) {
             throw error;
         }
@@ -65,18 +67,6 @@ export class DashboardFacade {
             await moodApi.update(newMood);
             this.dashboardStore.setTodayMood(newMood.mood);
             this.dashboardStore.updateWeeklyMoodTodayMood(newMood);
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async getPaginatedTasks(page: number, pageSize: number): Promise<void> {
-        try {
-            const existing = this.dashboardStore.tasksByPage[page];
-            if (!existing) {
-                const tasksData: Task[] = await taskApi.list(page, pageSize)
-                this.dashboardStore.setTasksForPage(page, tasksData);
-            }
         } catch (error) {
             throw error;
         }

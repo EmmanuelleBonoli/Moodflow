@@ -103,7 +103,7 @@ const moodOptions: MoodOption[] = [
 
 export function MoodModal({isOpen, onClose}: MoodModalProps) {
     const {todayMood} = useDashboardStore();
-    const dashboardService = new DashboardFacade();
+    const dashboardService: DashboardFacade = new DashboardFacade();
 
     if (!isOpen) return null;
 
@@ -146,7 +146,7 @@ export function MoodModal({isOpen, onClose}: MoodModalProps) {
                         <button
                             key={option.value}
                             onClick={() => handleMoodSelect(option.value)}
-                            className={`p-4 rounded-2xl border-2 transition-all duration-200 hover:scale-105 ${
+                            className={`cursor-pointer p-4 rounded-2xl border-2 transition-all duration-200 hover:scale-105 ${
                                 todayMood === option.value
                                     ? 'border-indigo-400 bg-indigo-50 shadow-lg shadow-indigo-500/20'
                                     : `${option.bgColor} border-transparent`

@@ -1,4 +1,5 @@
 import {Card} from '@/components/ui/card';
+import {PlanningAssistant} from "@/app/dashboard/components/Overview/PlanningAssistant";
 
 interface PlanningItem {
     title: string;
@@ -65,25 +66,28 @@ const planningData: PlanningSection[] = [
 ];
 
 export const Planning = () => (
-    <Card>
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            Planning suggéré de la journée
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {planningData.map((section, index) => (
-                <div key={index} className="space-y-3">
-                    <h4 className="font-medium text-gray-700">
-                        {section.emoji} {section.period}
-                    </h4>
-                    {section.items.map((item, itemIndex) => (
-                        <div key={itemIndex}
-                             className={`p-3 ${item.bgColor} rounded-lg border-l-4 ${item.borderColor}`}>
-                            <p className="font-medium">{item.title}</p>
-                            <p className="text-sm text-gray-600">{item.description}</p>
-                        </div>
-                    ))}
-                </div>
-            ))}
-        </div>
-    </Card>
+    <>
+        <PlanningAssistant/>
+        <Card>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Planning suggéré de la journée
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {planningData.map((section, index) => (
+                    <div key={index} className="space-y-3">
+                        <h4 className="font-medium text-gray-700">
+                            {section.emoji} {section.period}
+                        </h4>
+                        {section.items.map((item, itemIndex) => (
+                            <div key={itemIndex}
+                                 className={`p-3 ${item.bgColor} rounded-lg border-l-4 ${item.borderColor}`}>
+                                <p className="font-medium">{item.title}</p>
+                                <p className="text-sm text-gray-600">{item.description}</p>
+                            </div>
+                        ))}
+                    </div>
+                ))}
+            </div>
+        </Card>
+    </>
 );

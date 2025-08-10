@@ -82,7 +82,8 @@ export function CreateTaskModal({isOpen, onClose}: CreateTaskModalProps) {
                 </div>
 
                 <form onSubmit={handleSubmit(submit)} className="px-6 py-6 space-y-5">
-                    <InputField label="Titre *" id="title" {...register('title')} error={errors.title}/>
+                    <InputField autoFocus={true} label="Titre *" id="title" {...register('title')}
+                                error={errors.title}/>
                     <InputField
                         label="Description"
                         id="description"
