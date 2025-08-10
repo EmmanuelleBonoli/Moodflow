@@ -9,6 +9,7 @@ graphiques et des statistiques.
 
 - Authentification sécurisée (inscription/connexion)
 - Saisie quotidienne de l’humeur et des activités
+- Génération de planning personnalisé par IA
 - Dashboard récapitulatif interactif
 - Visualisation graphique de l’évolution des données
 
@@ -17,5 +18,7 @@ graphiques et des statistiques.
 - **Frontend:** Next.js, React, Tailwind CSS
 - **Backend:** NestJS, Prisma
 - **Base de données:** PostgreSQL
+- **Store:** Zustand
+- **IA:** Groq
 - **Gestion d’état & formulaires:** React Hook Form, Zod
 - **Auth & API calls:** Axios, JWT

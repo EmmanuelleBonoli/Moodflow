@@ -7,7 +7,7 @@ import {Planning} from './components/Planning/Planning';
 import Analytics from './components/Analytics/Analytics';
 import {Debrief} from './components/Debrief/Debrief';
 import {TabType} from '@moodflow/types';
-import {Tasks} from "@/app/dashboard/components/Task/Tasks";
+import {Tasks} from "@/app/dashboard/components/Tasks/Tasks";
 
 export default function Dashboard() {
     const [selectedTab, setSelectedTab] = useState<TabType>('overview');

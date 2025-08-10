@@ -1,5 +1,5 @@
 import {StatCard} from './StatCard';
-import {TaskList} from '../Task/TaskList';
+import {TaskList} from '../Shared/TaskList';
 import {MoodChart} from './MoodChart';
 import {useState} from "react";
 import {MoodModal} from "./MoodOptionsModal";

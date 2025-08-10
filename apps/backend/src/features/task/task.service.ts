@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../db/prisma/prisma.service';
-import { Task, TaskStatus, User } from '@prisma/client';
-import { DashboardTotal } from '@moodflow/types';
+import { Prisma, Task, TaskStatus, User } from '@prisma/client';
+import { DashboardTotal, TaskFilter } from '@moodflow/types';
 import { getStartAndEndOfDay } from '../../utils/utils';
 
 @Injectable()
@@ -23,21 +23,62 @@ export class TaskService {
     });
   }
 
-  async countTasksTotal(userId: string): Promise<DashboardTotal> {
-    const tasks: number = await this.prisma.task.count({
-      where: { userId },
-    });
+  async countTasksTotal(
+    userId: string,
+    filters: TaskFilter = { category: null, status: null },
+  ): Promise<DashboardTotal> {
+    const [totalTasks, totalCompletedTasks] = await Promise.all([
+      this.prisma.task.count({
+        where: { userId },
+      }),
+      this.prisma.task.count({
+        where: {
+          userId,
+          status: TaskStatus.completed,
+        },
+      }),
+    ]);
 
-    const completedTasks: number = await this.prisma.task.count({
-      where: {
-        userId,
-        status: TaskStatus.completed,
-      },
-    });
+    const baseWhere = {
+      userId,
+      ...(filters.category ? { category: filters.category } : {}),
+    };
+
+    let filteredTasks: number;
+    let filteredCompletedTasks: number;
+
+    if (filters.status) {
+      filteredTasks = await this.prisma.task.count({
+        where: {
+          ...baseWhere,
+          status: filters.status,
+        },
+      });
+
+      filteredCompletedTasks =
+        filters.status === TaskStatus.completed ? filteredTasks : 0;
+    } else {
+      const [allFiltered, completedFiltered] = await Promise.all([
+        this.prisma.task.count({
+          where: baseWhere,
+        }),
+        this.prisma.task.count({
+          where: {
+            ...baseWhere,
+            status: TaskStatus.completed,
+          },
+        }),
+      ]);
+
+      filteredTasks = allFiltered;
+      filteredCompletedTasks = completedFiltered;
+    }
 
     return {
-      tasks,
-      completedTasks,
+      totalTasks,
+      totalCompletedTasks,
+      filteredTasks,
+      filteredCompletedTasks,
     };
   }
 
@@ -45,31 +86,44 @@ export class TaskService {
     userId: string,
     page: number = 1,
     pageSize: number = 10,
+    filters: TaskFilter = { category: null, status: null },
   ): Promise<Task[]> {
     const offset: number = (page - 1) * pageSize;
 
-    // Étape A : combien de tâches actives existent au total ?
-    const activeTasksCount = await this.prisma.task.count({
-      where: {
-        userId,
-        status: {
-          in: [TaskStatus.pending, TaskStatus.in_progress],
+    const baseWhere = {
+      userId,
+      ...(filters.category ? { category: filters.category } : {}),
+    };
+
+    // Si un statut est spécifié, on ne fait plus le mix actif/completed
+    if (filters.status) {
+      return this.prisma.task.findMany({
+        where: {
+          ...baseWhere,
+          status: filters.status,
         },
-      },
+        orderBy: this.getOrderForStatus(filters.status),
+        skip: offset,
+        take: pageSize,
+      });
+    }
+
+    // Sinon, on applique la logique hybride active → puis completed
+    const activeWhere = {
+      ...baseWhere,
+      status: { in: [TaskStatus.pending, TaskStatus.in_progress] },
+    };
+
+    const activeTasksCount = await this.prisma.task.count({
+      where: activeWhere,
     });
 
     let activeTasks: Task[] = [];
     let completedTasks: Task[] = [];
 
-    // Cas 1 : on est encore dans les actives
     if (offset < activeTasksCount) {
       activeTasks = await this.prisma.task.findMany({
-        where: {
-          userId,
-          status: {
-            in: [TaskStatus.pending, TaskStatus.in_progress],
-          },
-        },
+        where: activeWhere,
         orderBy: [
           { priority: 'desc' },
           { createdAt: 'asc' },
@@ -79,26 +133,24 @@ export class TaskService {
         take: pageSize,
       });
 
-      const remainingSlots = pageSize - activeTasks.length;
+      const remaining = pageSize - activeTasks.length;
 
-      // On complète avec des completed si nécessaire
-      if (remainingSlots > 0) {
+      if (remaining > 0) {
         completedTasks = await this.prisma.task.findMany({
           where: {
-            userId,
+            ...baseWhere,
             status: TaskStatus.completed,
           },
           orderBy: { completedAt: 'desc' },
-          take: remainingSlots,
+          take: remaining,
         });
       }
     } else {
-      // Cas 2 : on a épuisé toutes les actives → on passe aux completed
       const completedOffset = offset - activeTasksCount;
 
       completedTasks = await this.prisma.task.findMany({
         where: {
-          userId,
+          ...baseWhere,
           status: TaskStatus.completed,
         },
         orderBy: { completedAt: 'desc' },
@@ -126,8 +178,8 @@ export class TaskService {
     });
   }
 
-  async updateTask(id: string, task: Task): Promise<void> {
-    await this.prisma.task.update({
+  async updateTask(id: string, task: Task): Promise<Task> {
+    return this.prisma.task.update({
       where: { id },
       data: task,
     });
@@ -137,5 +189,14 @@ export class TaskService {
     await this.prisma.task.delete({
       where: { id },
     });
+  }
+
+  private getOrderForStatus(
+    status: TaskStatus,
+  ): Prisma.TaskOrderByWithRelationInput[] {
+    if (status === 'completed') {
+      return [{ completedAt: 'desc' }];
+    }
+    return [{ priority: 'desc' }, { createdAt: 'asc' }, { updatedAt: 'desc' }];
   }
 }

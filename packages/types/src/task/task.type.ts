@@ -1,4 +1,5 @@
 import {z} from "zod";
+import {DashboardTotal} from "../dashboard/dashboard.type";
 
 export interface TaskCompletion {
     name: string;
@@ -26,3 +27,25 @@ export const TaskSchema = z.object({
 });
 
 export type Task = z.infer<typeof TaskSchema>;
+export type TaskStatus = z.infer<typeof TaskStatusSchema>;
+export type TaskCategory = z.infer<typeof TaskCategorySchema>;
+
+export type TaskFilter = {
+    category: TaskCategory | null,
+    status: TaskStatus | null,
+}
+
+export type TasksAndTotals = {
+    tasks: Task[],
+    totals: DashboardTotal
+}
+
+export type TaskOperationResponse = {
+    task: Task;
+    totals: DashboardTotal;
+}
+
+export type TaskDeleteResponse = {
+    success: boolean;
+    totals: DashboardTotal;
+}

@@ -29,7 +29,7 @@ interface TaskDetailModalProps {
 }
 
 export function TaskDetailModal({task, onOpenChange}: TaskDetailModalProps) {
-    const dashboardService = new DashboardFacade();
+    const dashboardService: DashboardFacade = new DashboardFacade();
     const [isOpenConfirmDelete, setIsOpenConfirmDelete] = React.useState(false);
 
     const {

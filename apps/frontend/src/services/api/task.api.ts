@@ -1,17 +1,17 @@
 import {apiClient} from './index';
-import type {Task} from '@moodflow/types';
+import {Task, TaskDeleteResponse, TaskOperationResponse, TasksAndTotals} from '@moodflow/types';
 
 export const taskApi = {
 
-    list: (page: number = 1, pageSize: number = 10): Promise<Task[]> =>
-        apiClient.get(`/task?page=${page}&pageSize=${pageSize}`),
+    list: (queryParams: string): Promise<TasksAndTotals> =>
+        apiClient.get(`/task?${queryParams}`),
 
-    create: (data: Partial<Task>): Promise<Task> =>
-        apiClient.post('/task', data),
+    create: (data: Partial<Task>, queryParams: string): Promise<TaskOperationResponse> =>
+        apiClient.post(`/task?${queryParams}`, data),
 
-    update: (data: Partial<Task>): Promise<void> =>
-        apiClient.patch(`/task/${data.id}`, data),
+    update: (data: Partial<Task>, queryParams: string): Promise<TaskOperationResponse> =>
+        apiClient.patch(`/task/${data.id}?${queryParams}`, data),
 
-    delete: (id: string): Promise<void> =>
-        apiClient.delete(`/task/${id}`),
+    delete: (id: string, queryParams: string): Promise<TaskDeleteResponse> =>
+        apiClient.delete(`/task/${id}?${queryParams}`),
 };

@@ -4,6 +4,7 @@ import "./globals.css";
 import {PropsWithChildren} from "react";
 import {ThemeProvider} from "next-themes";
 import {Toaster} from "sonner";
+import {QueryProvider} from "@/providers/QueryProvider";
 
 const inter = Inter({subsets: ['latin']})
 
@@ -17,15 +18,17 @@ export default function RootLayout({children}: PropsWithChildren) {
         <>
             <html lang="fr" suppressHydrationWarning>
             <body className={`min-h-screen bg-app-gradient ${inter.className}`}>
-            <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-            >
-                {children}
-                <Toaster/>
-            </ThemeProvider>
+            <QueryProvider>
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="system"
+                    enableSystem
+                    disableTransitionOnChange
+                >
+                    {children}
+                    <Toaster/>
+                </ThemeProvider>
+            </QueryProvider>
             </body>
             </html>
         </>

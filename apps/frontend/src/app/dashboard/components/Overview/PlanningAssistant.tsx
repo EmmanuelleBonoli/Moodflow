@@ -3,14 +3,20 @@
 import {useState} from "react";
 import {Plus, Sparkles} from "lucide-react";
 import {useDashboardStore} from "@/stores/dashboardStore";
-import {CreateTaskModal} from "../Task/CreateTaskModal";
+import {CreateTaskModal} from "../Tasks/CreateTaskModal";
+import {useTasks} from "@/hooks/useTasks";
 
 interface OverviewProps {
     onSwitchToPlanning?: () => void;
 }
 
 export function PlanningAssistant({onSwitchToPlanning}: OverviewProps) {
-    const {todayMood, dashboardTotal} = useDashboardStore()
+    const {todayMood} = useDashboardStore()
+    const {currentPage, pageSize, taskFilters} = useDashboardStore();
+
+    const {data} = useTasks(currentPage, pageSize, taskFilters);
+    const totalTasks = data?.totals.filteredTasks ?? 0;
+
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     function getMoodMessage(todayMood: number, totalTasks: number): string {
@@ -56,7 +62,7 @@ export function PlanningAssistant({onSwitchToPlanning}: OverviewProps) {
                                 className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">En ligne</span>
                         </h3>
                         <p className="text-gray-600 mb-4 max-w-2xl">
-                            {getMoodMessage(todayMood, dashboardTotal.tasks)}
+                            {getMoodMessage(todayMood, totalTasks)}
                         </p>
                     </div>
                 </div>

@@ -3,40 +3,44 @@
 import {Card} from '@/components/ui/card';
 import {TaskItem} from './TaskItem';
 import {useDashboardStore} from "@/stores/dashboardStore";
-import {TaskDetailModal} from "./TaskDetailModal";
+import {TaskDetailModal} from "../Tasks/TaskDetailModal";
 import {useState} from "react";
-import {Task} from "@moodflow/types";
-import {PaginationControls} from "./PaginationControls";
-import {DashboardFacade} from "@/services/facade/dashboard.facade";
-import {toast} from "sonner";
+import {Task, TaskStatusSchema} from "@moodflow/types";
+import {PaginationControls} from "../Tasks/PaginationControls";
+import {useTasks} from "@/hooks/useTasks";
 
 interface TaskListProps {
     onSwitchToTasks?: () => void;
 }
 
 export function TaskList({onSwitchToTasks}: TaskListProps) {
-    const {tasksByPage, dashboardTotal, setCurrentPage, currentPage, pageSize} = useDashboardStore()
-    const dashboardService: DashboardFacade = new DashboardFacade()
+    const {currentPage, pageSize, taskFilters, setCurrentPage} = useDashboardStore();
+
+    const {data, isLoading, error} = useTasks(currentPage, pageSize, taskFilters);
+
+    const tasks = data?.tasks ?? [];
+    const totalTasks = data?.totals.filteredTasks ?? 0;
+    const completedTasks = data?.totals.filteredCompletedTasks ?? 0;
+
+    const totalPages = Math.ceil(totalTasks / pageSize);
 
     const [isTaskDetailsOpen, setIsTaskDetailsOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-
-    const totalPages = Math.ceil(dashboardTotal.tasks / pageSize);
-    const paginatedTasks = tasksByPage[currentPage] ?? [];
 
     function onSelectTask(task: Task): void {
         setSelectedTask(task);
         setIsTaskDetailsOpen(true);
     }
 
-    async function handlePageChange(page: number): Promise<void> {
-        setCurrentPage(page);
-        try {
-            await dashboardService.getPaginatedTasks(page, 10)
-        } catch (err) {
-            toast.error((err as Error).message)
-        }
+
+    function handlePageChange(newPage: number) {
+        setCurrentPage(newPage);
     }
+
+
+    if (isLoading) return <div>Chargement...</div>;
+    if (error) return <div>Erreur : {(error as Error).message}</div>;
+
 
     return (
         <>
@@ -45,11 +49,11 @@ export function TaskList({onSwitchToTasks}: TaskListProps) {
                     <h3 className="text-lg font-semibold text-gray-800">Aperçu des tâches</h3>
                     <div className="flex items-center gap-2">
                             <span
-                                className="text-sm text-gray-500">{dashboardTotal.completedTasks}/{dashboardTotal.tasks} terminées</span>
+                                className="text-sm text-gray-500">{completedTasks}/{totalTasks} terminées</span>
                         <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-500"
-                                style={{width: `${dashboardTotal.completedTasks / dashboardTotal.tasks * 100}%`}}
+                                style={{width: `${completedTasks / totalTasks * 100}%`}}
                             />
                         </div>
                     </div>
@@ -59,7 +63,7 @@ export function TaskList({onSwitchToTasks}: TaskListProps) {
                     {onSwitchToTasks ? (
                         <div className="space-y-6">
                             <div className="space-y-3">
-                                {tasksByPage[1]?.slice(0, 3).map(task => (
+                                {tasks.filter((task) => task.status !== TaskStatusSchema.enum.completed).slice(0, 3).map(task => (
                                     <TaskItem key={task.id} task={task}
                                               selectTask={(task: Task): void => onSelectTask(task)}/>
                                 ))}
@@ -75,7 +79,7 @@ export function TaskList({onSwitchToTasks}: TaskListProps) {
                     ) : (
                         <div className="space-y-6">
                             <div className="space-y-3">
-                                {paginatedTasks.map(task => (
+                                {tasks.map(task => (
                                     <TaskItem
                                         key={task.id}
                                         task={task}

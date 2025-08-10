@@ -9,7 +9,6 @@ export class AuthFacade {
 
     private async handleAuthResponse(authResponse: RegisterOrLoginUserResponse): Promise<void> {
         const {user, dashboard} = authResponse;
-        console.log(dashboard);
 
         localStorage.setItem('accessToken', user.accessToken);
         this.userStore.setUserName(user.name);
